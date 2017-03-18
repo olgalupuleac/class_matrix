@@ -1,102 +1,70 @@
-#include <string>
-#include <map>
-#include <iostream>
-#include <cstdio>
-#include <cassert>
-
+#include <fstream>
 #include "matrix.h"
 
-typedef std::map<std::string, Matrix*> var_storage;
-
-int main(int, char **) {
-  std::string cmd, arg1, arg2;
-  var_storage vars;
-
-  while (std::cin) {
-    std::cin >> cmd;
-    if (cmd == "exit") {
-      break;
-    } else if (cmd == "init") {
-      std::size_t rows, cols;
-      std::cin >> arg1 >> rows >> cols;
-      assert(!vars.count(arg1) && "Already created var");
-      vars[arg1] = new Matrix(rows, cols);
-    } else if (cmd == "#") {
-      std::cin >> arg1;
-      assert(vars.count(arg1) && "Unknows var");
-      std::cout << vars[arg1]->get_rows() << " ";
-      std::cout << vars[arg1]->get_cols() << std::endl;
-    } else if (cmd == "get") {
-      std::size_t i, j;
-      std::cin >> arg1 >> i >> j;
-      assert(vars.count(arg1) && "Unknows var");
-      std::cout << vars[arg1]->get(i, j) << std::endl;
-    } else if (cmd == "set") {
-      std::size_t i, j;
-      int v;
-      std::cin >> arg1 >> i >> j >> v;
-      assert(vars.count(arg1) && "Unknows var");
-      vars[arg1]->set(i, j, v);
-    } else if (cmd == "print") {
-      std::cin >> arg1;
-      assert(vars.count(arg1) && "Unknows var");
-      vars[arg1]->print(stdout);
-    } else if (cmd == "cp_init") {
-      std::cin >> arg1 >> arg2;
-      assert(!vars.count(arg1) && "Already created var");
-      assert(vars.count(arg2) && "Unknows var");
-      vars[arg1] = new Matrix(*vars[arg2]);
-    } else if (cmd == "=") {
-      std::cin >> arg1 >> arg2;
-      assert(vars.count(arg2) && "Unknows var");
-      if (vars.count(arg1) == 0) {
-        vars[arg1] = new Matrix(0, 0);
-      }
-      *vars[arg1] = *vars[arg2];
-    } else if (cmd == "==") {
-      std::cin >> arg1 >> arg2;
-      assert(vars.count(arg1) && "Unknows var");
-      assert(vars.count(arg2) && "Unknows var");
-      std::cout << (*vars[arg1] == *vars[arg2]) << std::endl;
-    } else if (cmd == "!=") {
-      std::cin >> arg1 >> arg2;
-      assert(vars.count(arg1) && "Unknows var");
-      assert(vars.count(arg2) && "Unknows var");
-      std::cout << (*vars[arg1] != *vars[arg2]) << std::endl;
-    } else if (cmd == "+=") {
-      std::cin >> arg1 >> arg2;
-      assert(vars.count(arg1) && "Unknows var");
-      assert(vars.count(arg2) && "Unknows var");
-      *vars[arg1] += *vars[arg2];
-    } else if (cmd == "-=") {
-      std::cin >> arg1 >> arg2;
-      assert(vars.count(arg1) && "Unknows var");
-      assert(vars.count(arg2) && "Unknows var");
-      *vars[arg1] -= *vars[arg2];
-    } else if (cmd == "*=") {
-      std::cin >> arg1 >> arg2;
-      assert(vars.count(arg1) && "Unknows var");
-      assert(vars.count(arg2) && "Unknows var");
-      *vars[arg1] *= *vars[arg2];
-     } else if (cmd == "+") {
-      std::cin >> arg1 >> arg2;
-      assert(vars.count(arg1) && "Unknows var");
-      assert(vars.count(arg2) && "Unknows var");
-      (*vars[arg1] + *vars[arg2]).print(stdout);
-    } else if (cmd == "-") {
-      std::cin >> arg1 >> arg2;
-      assert(vars.count(arg1) && "Unknows var");
-      assert(vars.count(arg2) && "Unknows var");
-      (*vars[arg1] - *vars[arg2]).print(stdout);
-    } else if (cmd == "*") {
-      std::cin >> arg1 >> arg2;
-      assert(vars.count(arg1) && "Unknows var");
-      assert(vars.count(arg2) && "Unknows var");
-      (*vars[arg1] * *vars[arg2]).print(stdout);
+int main() {
+    Matrix matrixes[10];
+    while (1) {
+        std::string command;
+        std::cin >> command;
+        char reg_sign;
+        if (command == "load") {
+            std::size_t reg;
+            std::string filename;
+            std::cin >> reg_sign >> reg >> filename;
+            std::filebuf fb;
+            if (fb.open(filename, std::ios::in))
+            {
+                std::istream is(&fb);
+                size_t height, width;
+                is >> height >> width;
+                Matrix tmp(height, width);
+                is >> tmp;
+                matrixes[reg] = tmp;
+                fb.close();
+            }
+        }
+        if (command == "print") {
+            std::size_t reg;
+            std::cin >> reg_sign >> reg;
+            std::cout << matrixes[reg];
+        }
+        if (command == "add") {
+            std::size_t reg1;
+            std::size_t reg2;
+            std::cin >> reg_sign >> reg1 >> reg_sign >> reg2;
+            try{
+                matrixes[reg1] += matrixes[reg2];
+            }
+            catch(const MatrixException& e) {
+                std::cerr << e.what() << std::endl;
+            }
+        }
+        if (command == "mul") {
+            std::size_t reg1;
+            std::size_t reg2;
+            std::cin >> reg_sign >> reg1 >> reg_sign >> reg2;
+            try {
+                matrixes[reg1] *= matrixes[reg2];
+            }
+            catch (const MatrixException& e) {
+                std::cerr << e.what() << std::endl;
+            }
+        }
+        if (command == "elem") {
+            std::size_t reg;
+            std::size_t row_index;
+            std::size_t col_index;
+            std::cin >> reg_sign >> reg >> row_index >> col_index;
+            try {
+                std::cout << matrixes[reg][row_index][col_index] << std::endl;
+            }
+            catch (const MatrixException& e) {
+                std::cerr << e.what() << std::endl;
+            }
+        }
+        if (command == "exit") {
+            exit(0);
+        }
     }
-  }
-
-  for (var_storage::iterator it = vars.begin(); it != vars.end(); ++it) {
-    delete it->second;
-  }
+    return 0;
 }
