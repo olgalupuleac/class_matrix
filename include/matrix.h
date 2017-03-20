@@ -11,7 +11,7 @@
 
 class MatrixException {
 public:
-    MatrixException(std::string what_happend);
+    MatrixException(const std::string& what_happend);
     std::string what() const;
 private:
     std::string _error;
@@ -29,7 +29,7 @@ private:
         const std::size_t _matrix_cols;
     public:
         row(int* matrix_row, std::size_t matrix_cols);
-        int& operator[](size_t col_index);
+        int& operator[](std::size_t col_index);
     };
 
     class const_row {
@@ -38,29 +38,28 @@ private:
         const std::size_t _matrix_cols;
     public:
         const_row(const int* matrix_row, std::size_t matrix_cols);
-        int operator[](size_t col_index) const;
+        int operator[](std::size_t col_index) const;
     };
 public:
     Matrix();
-    Matrix(std::size_t r, std::size_t c);
+    Matrix(std::size_t rows, std::size_t cols);
     Matrix(const Matrix& m);
     ~Matrix();
-    std::size_t get_rows() const;
-    std::size_t get_cols() const;
-    void set(std::size_t i, std::size_t j, int val);
-    int get(std::size_t i, std::size_t j);
-    Matrix& operator=(Matrix m);
-    Matrix operator+(const Matrix& m) const;
-    Matrix operator-(const Matrix& m) const;
-    Matrix operator*(const Matrix& m) const;
-    Matrix& operator+=(const Matrix& m);
-    Matrix& operator-=(const Matrix& m);
-    Matrix& operator*=(const Matrix& m);
+    std::size_t rows() const;
+    std::size_t cols() const;
+    Matrix& operator=(Matrix other);
     row operator[](std::size_t row_index);
     const_row operator[](std::size_t row_index) const;
-    bool operator==(const Matrix& m) const;
-    bool operator!=(const Matrix& m) const;
 };
+
+Matrix operator+(const Matrix& lhs, const Matrix& rhs);
+Matrix operator-(const Matrix& lhs, const Matrix& rhs);
+Matrix& operator*=(Matrix& lhs, const Matrix& rhs);
+bool operator==(const Matrix& lhs, const Matrix& rhs);
+bool operator!=(const Matrix& lhs, const Matrix& rhs);
+Matrix operator*(const Matrix& lhs, const Matrix& rhs);
+Matrix& operator+=(Matrix& lhs, const Matrix& rhs);
+Matrix& operator-=(Matrix& lhs, const Matrix& rhs);
 
 std::ostream& operator<<(std::ostream& os, const Matrix& m);
 std::istream& operator>>(std::istream& is, Matrix& m);
